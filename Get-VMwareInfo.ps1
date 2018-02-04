@@ -70,7 +70,7 @@ PSLogging module by Luca Sturlese (http://9to5it.com)
 #[Script Parameters]===============================================================================
 
 Param (
-  #Script parameters go here
+  [Parameter(Mandatory=$true)] [string] $sVIServer 
 )
 
 #[Initialization]==================================================================================
@@ -99,8 +99,8 @@ Function Connect-VMwareServer {
 
   Process {
     Try {
-      $oCred = Get-Credential -Message 'Enter credentials to connect to vSphere Server or Host'
-      Connect-VIServer -Server $VMServer -Credential $oCred
+      $oCred = Get-Credential -Message 'Enter credentials to connect to vCenter Server or vSphere Host'
+      $script:oVIServer = Connect-VIServer -Server $VMServer -Credential $oCred
     }
 
     Catch {
@@ -115,6 +115,231 @@ Function Connect-VMwareServer {
       Write-LogInfo -LogPath $sLogFile -Message ' '
     }
   }
+}
+
+Function Get-CustomHTML{
+  Param(
+    [Parameter(Mandatory=$true)] [string] $Header
+  )
+$Report = @"
+  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+  <html><head><title>$($Header)</title>
+      <META http-equiv=Content-Type content='text/html; charset=windows-1252'>
+      <style type="text/css">
+      
+      TABLE 		{
+        TABLE-LAYOUT: fixed; 
+        FONT-SIZE: 100%; 
+        WIDTH: 100%
+    }
+    *           {
+        margin:0
+    }
+    
+    .dspcont 	{
+    
+        BORDER-RIGHT: #bbbbbb 1px solid;
+        BORDER-TOP: #bbbbbb 1px solid;
+        PADDING-LEFT: 0px;
+        FONT-SIZE: 8pt;
+        MARGIN-BOTTOM: -1px;
+        PADDING-BOTTOM: 5px;
+        MARGIN-LEFT: 0px;
+        BORDER-LEFT: #bbbbbb 1px solid;
+        WIDTH: 95%;
+        COLOR: #717074;
+        MARGIN-RIGHT: 0px;
+        PADDING-TOP: 4px;
+        BORDER-BOTTOM: #bbbbbb 1px solid;
+        FONT-FAMILY: Tahoma;
+        POSITION: relative;
+        BACKGROUND-COLOR: #f9f9f9
+    }
+    
+    .filler 	{
+        BORDER-RIGHT: medium none; 
+        BORDER-TOP: medium none; 
+        DISPLAY: block; 
+        BACKGROUND: none transparent scroll repeat 0% 0%; 
+        MARGIN-BOTTOM: -1px; 
+        FONT: 100%/8px Tahoma; 
+        MARGIN-LEFT: 43px; 
+        BORDER-LEFT: medium none; 
+        COLOR: #ffffff; 
+        MARGIN-RIGHT: 0px; 
+        PADDING-TOP: 4px; 
+        BORDER-BOTTOM: medium none; 
+        POSITION: relative
+    }
+    
+    .pageholder	{
+        margin: 0px auto;
+    }
+    
+    .dsp
+    {
+        BORDER-RIGHT: #bbbbbb 1px solid;
+        PADDING-RIGHT: 0px;
+        BORDER-TOP: #bbbbbb 1px solid;
+        DISPLAY: block;
+        PADDING-LEFT: 0px;
+        FONT-WEIGHT: bold;
+        FONT-SIZE: 12pt;
+        MARGIN-BOTTOM: -1px;
+        MARGIN-LEFT: 0px;
+        BORDER-LEFT: #bbbbbb 1px solid;
+        COLOR: #FFFFFF;
+        MARGIN-RIGHT: 0px;
+        PADDING-TOP: 4px;
+        BORDER-BOTTOM: #bbbbbb 1px solid;
+        FONT-FAMILY: Tahoma;
+        POSITION: relative;
+        HEIGHT: 2.25em;
+        WIDTH: 95%;
+        TEXT-INDENT: 10px;
+    }
+    
+    .dsphead0	{
+        BACKGROUND-COLOR: #387c2c;
+    }
+    
+    .dsphead1	{
+        
+        BACKGROUND-COLOR: #003d79;
+    }
+    
+    .dspcomments 	{
+        BACKGROUND-COLOR:#FFFFE1;
+        COLOR: #000000;
+        FONT-STYLE: ITALIC;
+        FONT-WEIGHT: normal;
+        FONT-SIZE: 8pt;
+    }
+    
+    td 				{
+        VERTICAL-ALIGN: TOP; 
+        FONT-FAMILY: Tahoma
+    }
+    
+    th 				{
+        VERTICAL-ALIGN: TOP; 
+        COLOR: #003d70; 
+        TEXT-ALIGN: left
+    }
+    
+    BODY 			{
+        margin-left: 4pt;
+        margin-right: 4pt;
+        margin-top: 6pt;
+    } 
+    .MainTitle		{
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:20pt;
+        font-weight:bolder;
+    }
+    .SubTitle		{
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:10pt;
+        font-weight:bold;
+    }
+    .Created		{
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:10px;
+        font-weight:normal;
+        margin-top: 20px;
+        margin-bottom:5px;
+    }
+    .links			{	font:Arial, Helvetica, sans-serif;
+        font-size:10px;
+        FONT-STYLE: ITALIC;
+    }
+
+      </style>
+    </head>
+    <body>
+  <div class="MainTitle">$($Header)</div>
+        <hr size="8" color="#387c2c" width="95%">
+        <div class="SubTitle">VMware Info v$($sScriptVersion) generated on $($ENV:Computername)</div>
+        <br/>
+        <div class="Created">Report created on $(Get-Date)</div>
+"@
+Return $Report
+  }
+
+Function Get-CustomHTMLClose{
+$Report = @"
+  </div>
+  </body>
+  </html>
+"@
+Return $Report
+}
+
+Function Get-CustomHeader0 ($Title){
+  $Report = @"
+      <div class="pageholder">		
+      <h1 class="dsp dsphead0">$($Title)</h1>
+      <div class="filler"></div>
+"@
+Return $Report
+}
+
+Function Get-CustomHeader0Close{
+$Report = @"
+</div>
+"@
+Return $Report
+}
+
+Function Get-CustomHeader ($Title, $cmnt){
+$Report = @"
+  <h2 class="dsp dsphead1">$($Title)</h2>
+"@
+If ($Comments) {
+  $Report += @"
+  <div class="dsp dspcomments">$($cmnt)</div>
+"@
+}
+$Report += @"
+  <div class="dspcont">
+"@
+Return $Report
+}
+  
+Function Get-CustomHeaderClose{
+$Report = @"
+  </div>
+  <div class="filler"></div>
+"@
+Return $Report
+}
+
+Function Get-HTMLTable {
+	param([array]$Content)
+	$HTMLTable = $Content | ConvertTo-Html
+	$HTMLTable = $HTMLTable -replace '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">', ""
+	$HTMLTable = $HTMLTable -replace '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"  "http://www.w3.org/TR/html4/strict.dtd">', ""
+	$HTMLTable = $HTMLTable -replace '<html xmlns="http://www.w3.org/1999/xhtml">', ""
+	$HTMLTable = $HTMLTable -replace '<html>', ""
+	$HTMLTable = $HTMLTable -replace '<head>', ""
+	$HTMLTable = $HTMLTable -replace '<title>HTML TABLE</title>', ""
+	$HTMLTable = $HTMLTable -replace '</head><body>', ""
+	$HTMLTable = $HTMLTable -replace '</body></html>', ""
+	$HTMLTable = $HTMLTable -replace '&lt;', "<"
+	$HTMLTable = $HTMLTable -replace '&gt;', ">"
+	Return $HTMLTable
+}
+
+Function Get-HTMLDetail ($Heading, $Detail){
+$Report = @"
+<TABLE>
+  <tr>
+    <th width='50%'><b>$($Heading)</b></font></th>
+    <td width='50%'>$($Detail)</td>
+  </tr>
+</TABLE>
+"@
+Return $Report
 }
 
 <#
@@ -147,10 +372,46 @@ Function <FunctionName> {
 
 #>
 
-#-----------------------------------------------------------[Execution]------------------------------------------------------------
-
+#[Script Execution]================================================================================
+$Date = Get-Date
+#Start Logging
 Start-Log -LogPath $sLogPath -LogName $sLogName -ScriptVersion $sScriptVersion
-$Server = Read-Host 'Specify the vCenter Server or ESXi Host to connect to (IP or FQDN)?'
-Connect-VMwareServer -VMServer $Server
-#Script Execution goes here
+
+#Connect to vCenter or ESXi host
+Connect-VMwareServer -VMServer $sVIServer
+
+#Initialize HTML Report
+$MyReport = Get-CustomHTML -Header "VMware Information Report"
+$MyReport += Get-CustomHeader0 $oVIServer.Name
+
+#Collect License Details
+$LicInfo = @()
+$SvcInstance = Get-View ServiceInstance
+$LicManager = Get-View $SvcInstance.Content.LicenseManager
+ForEach ($License in ($LicManager | Select-Object -ExpandProperty Licenses | Where-Object {$_.Name -ne "Product Evaluation"})){
+  $LicDetails = "" | Select-Object vCenter, Name, Used, Total, ExpirationDate, Information
+  $LicDetails.vCenter = ([uri]$LicManager.Client.ServiceUrl).Host
+  $LicDetails.Name = $License.Name
+  $LicDetails.Used = $License.Used
+  $LicDetails.Total = $License.Total
+  $LicDetails.ExpirationDate = $License.Properties | Where-Object {$_.key -eq "expirationDate"} | Select-Object -ExpandProperty Value
+  $LicDetails.Information = $License.Labels | Select-Object -ExpandProperty Value
+  $LicInfo += $LicDetails
+}
+
+$MyReport += Get-CustomHeader "VMware Licensing Details"
+$MyReport += Get-HTMLTable $LicInfo
+$MyReport += Get-CustomHeaderClose
+
+
+#Close HTML Report
+$MyReport += Get-CustomHeader0Close
+$MyReport += Get-CustomHTMLClose
+
+#Save the report and open in default browser
+$FileName = ".\" + $sVIServer + "VMwareInfo_" + $Date.Month + "-" + $Date.Day + "-" + $Date.Year + ".htm"
+$MyReport | Out-File -Encoding ascii -FilePath $FileName
+Invoke-Item $FileName
+
+#Stop Logging
 Stop-Log -LogPath $sLogFile
