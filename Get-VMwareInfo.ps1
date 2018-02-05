@@ -271,18 +271,18 @@ $MyReport += Get-CustomHeaderClose
 #Collect ESXi Host Details
 $HostInfo = @()
 $VMHosts = Get-VMHost
+$lam = Get-View LicenseAssignmentManager
 ForEach ($VMHost in $VMHosts){
-  $HostDetails = "" | Select-Object Name,Manufacturer,Model,Memory,CPUSockets,CPUCores,CPUModel,CPUFrequency,ESXiVersion,LicenseEdition
+  $HostDetails = "" | Select-Object Name,Manufacturer,Model,Memory,Sockets,Cores,CPUModel,CPUFrequency,ESXiVersion,LicenseEdition
   $HostDetails.Name = $VMHost.Name
   $HostDetails.Manufacturer = $VMHost.ExtensionData.Summary.Hardware.Vendor
   $HostDetails.Model = $VMHost.ExtensionData.Summary.Hardware.Model
-  $HostDetails.Memory = $VMHost.ExtensionData.Summary.Hardware.MemorySize/1gb
-  $HostDetails.CPUSockets = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuPackages
-  $HostDetails.CPUCores = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuCores
+  $HostDetails.Memory = [string]([math]::Round(($VMHost.ExtensionData.Summary.Hardware.MemorySize)/1gb,2)) + " GB"
+  $HostDetails.Sockets = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuPackages
+  $HostDetails.Cores = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuCores
   $HostDetails.CPUModel = $VMHost.ExtensionData.Summary.Hardware.CPUModel
-  $HostDetails.CPUFrequency = $VMHost.ExtensionData.Summary.Hardware.CpuMhz/1000
+  $HostDetails.CPUFrequency = [string]($VMHost.ExtensionData.Summary.Hardware.CpuMhz/1000) + " GHz"
   $HostDetails.ESXiVersion = $VMHost.ExtensionData.Config.Product.FullName
-  $lam = Get-View LicenseAssignmentManager
   $HostDetails.LicenseEdition = ($lam.QueryAssignedLicenses($VMHost.ExtensionData.MoRef.Value)).AssignedLicense.Name
   $HostInfo += $HostDetails
 }
