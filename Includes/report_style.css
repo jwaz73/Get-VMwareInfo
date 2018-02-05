@@ -1,0 +1,128 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    max-width: 1000px;
+    margin: auto;
+}
+
+div{
+    margin: 0;
+}
+h1 {
+    margin: 0;
+}
+
+h2 {
+    margin: 0;
+}
+
+table {
+    table-layout: auto; 
+    width: 100%
+}
+
+th {
+    color: #003d70; 
+    text-align: left
+}
+
+hr {
+    margin: 0;
+}
+
+img.logo{
+    width: 300px;
+}
+
+.header{
+    background-image: url("../Includes/report_header.png");
+    height: 250px;
+}
+
+.dspcont {
+    BORDER-RIGHT: #bbbbbb 1px solid;
+    BORDER-TOP: #bbbbbb 1px solid;
+    PADDING-LEFT: 0px;
+    FONT-SIZE: 8pt;
+    MARGIN-BOTTOM: -1px;
+    PADDING-BOTTOM: 5px;
+    MARGIN-LEFT: 0px;
+    BORDER-LEFT: #bbbbbb 1px solid;
+    COLOR: #717074;
+    MARGIN-RIGHT: 0px;
+    PADDING-TOP: 4px;
+    BORDER-BOTTOM: #bbbbbb 1px solid;
+    POSITION: relative;
+    BACKGROUND-COLOR: #f9f9f9
+}
+
+.filler {
+    BORDER-RIGHT: medium none; 
+    BORDER-TOP: medium none; 
+    DISPLAY: block; 
+    BACKGROUND: none transparent scroll repeat 0% 0%; 
+    MARGIN-BOTTOM: -1px; 
+    MARGIN-LEFT: 43px; 
+    BORDER-LEFT: medium none; 
+    COLOR: #ffffff; 
+    MARGIN-RIGHT: 0px; 
+    PADDING-TOP: 4px; 
+    BORDER-BOTTOM: medium none; 
+    POSITION: relative
+}
+
+.pageholder	{
+    margin: 0px auto;
+}
+
+.dsp {
+    margin-top: 5px;
+    padding: 0;
+    COLOR: #FFFFFF;
+    text-indent: 10px;
+}
+
+.dsphead0 {
+    background-color: #387c2c;
+    text-transform: uppercase;
+    font-size: 18pt;
+    font-weight: bold;
+}
+
+.dsphead1 {
+    
+    BACKGROUND-COLOR: #003d79;
+    font-size: 16pt;
+}
+
+.dspcomments {
+    BACKGROUND-COLOR:#FFFFE1;
+    COLOR: #000000;
+    FONT-STYLE: ITALIC;
+    FONT-WEIGHT: normal;
+    FONT-SIZE: 8pt;
+}
+
+.maintitle {
+    font-size:20pt;
+    font-weight:bolder;
+    color: #ffffff;
+    text-align: center;
+}
+.subtitle		{
+    font-size:10pt;
+    font-weight:bold;
+    margin-top: 5px;
+}
+.Created		{
+    font-size:10px;
+    font-weight:normal;
+    margin-top: 20px;
+    margin-bottom:5px;
+}
+.links			{	
+    font-size:10px;
+    FONT-STYLE: ITALIC;
+}

@@ -81,7 +81,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 #[Declarations]====================================================================================
 
 #Script Version
-$sScriptVersion = '1.0'
+$sScriptVersion = 'Beta 0.1'
 
 #Log File Info
 $sLogPath = 'C:\Windows\Temp'
@@ -122,178 +122,44 @@ Function Get-CustomHTML{
     [Parameter(Mandatory=$true)] [string] $Header
   )
 $Report = @"
-  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
-  <html><head><title>$($Header)</title>
-      <META http-equiv=Content-Type content='text/html; charset=windows-1252'>
-      <style type="text/css">
-      
-      TABLE 		{
-        TABLE-LAYOUT: fixed; 
-        FONT-SIZE: 100%; 
-        WIDTH: 100%
-    }
-    *           {
-        margin:0
-    }
-    
-    .dspcont 	{
-    
-        BORDER-RIGHT: #bbbbbb 1px solid;
-        BORDER-TOP: #bbbbbb 1px solid;
-        PADDING-LEFT: 0px;
-        FONT-SIZE: 8pt;
-        MARGIN-BOTTOM: -1px;
-        PADDING-BOTTOM: 5px;
-        MARGIN-LEFT: 0px;
-        BORDER-LEFT: #bbbbbb 1px solid;
-        WIDTH: 95%;
-        COLOR: #717074;
-        MARGIN-RIGHT: 0px;
-        PADDING-TOP: 4px;
-        BORDER-BOTTOM: #bbbbbb 1px solid;
-        FONT-FAMILY: Tahoma;
-        POSITION: relative;
-        BACKGROUND-COLOR: #f9f9f9
-    }
-    
-    .filler 	{
-        BORDER-RIGHT: medium none; 
-        BORDER-TOP: medium none; 
-        DISPLAY: block; 
-        BACKGROUND: none transparent scroll repeat 0% 0%; 
-        MARGIN-BOTTOM: -1px; 
-        FONT: 100%/8px Tahoma; 
-        MARGIN-LEFT: 43px; 
-        BORDER-LEFT: medium none; 
-        COLOR: #ffffff; 
-        MARGIN-RIGHT: 0px; 
-        PADDING-TOP: 4px; 
-        BORDER-BOTTOM: medium none; 
-        POSITION: relative
-    }
-    
-    .pageholder	{
-        margin: 0px auto;
-    }
-    
-    .dsp
-    {
-        BORDER-RIGHT: #bbbbbb 1px solid;
-        PADDING-RIGHT: 0px;
-        BORDER-TOP: #bbbbbb 1px solid;
-        DISPLAY: block;
-        PADDING-LEFT: 0px;
-        FONT-WEIGHT: bold;
-        FONT-SIZE: 12pt;
-        MARGIN-BOTTOM: -1px;
-        MARGIN-LEFT: 0px;
-        BORDER-LEFT: #bbbbbb 1px solid;
-        COLOR: #FFFFFF;
-        MARGIN-RIGHT: 0px;
-        PADDING-TOP: 4px;
-        BORDER-BOTTOM: #bbbbbb 1px solid;
-        FONT-FAMILY: Tahoma;
-        POSITION: relative;
-        HEIGHT: 2.25em;
-        WIDTH: 95%;
-        TEXT-INDENT: 10px;
-    }
-    
-    .dsphead0	{
-        BACKGROUND-COLOR: #387c2c;
-    }
-    
-    .dsphead1	{
-        
-        BACKGROUND-COLOR: #003d79;
-    }
-    
-    .dspcomments 	{
-        BACKGROUND-COLOR:#FFFFE1;
-        COLOR: #000000;
-        FONT-STYLE: ITALIC;
-        FONT-WEIGHT: normal;
-        FONT-SIZE: 8pt;
-    }
-    
-    td 				{
-        VERTICAL-ALIGN: TOP; 
-        FONT-FAMILY: Tahoma
-    }
-    
-    th 				{
-        VERTICAL-ALIGN: TOP; 
-        COLOR: #003d70; 
-        TEXT-ALIGN: left
-    }
-    
-    BODY 			{
-        margin-left: 4pt;
-        margin-right: 4pt;
-        margin-top: 6pt;
-    } 
-    .MainTitle		{
-        font-family:Arial, Helvetica, sans-serif;
-        font-size:20pt;
-        font-weight:bolder;
-    }
-    .SubTitle		{
-        font-family:Arial, Helvetica, sans-serif;
-        font-size:10pt;
-        font-weight:bold;
-    }
-    .Created		{
-        font-family:Arial, Helvetica, sans-serif;
-        font-size:10px;
-        font-weight:normal;
-        margin-top: 20px;
-        margin-bottom:5px;
-    }
-    .links			{	font:Arial, Helvetica, sans-serif;
-        font-size:10px;
-        FONT-STYLE: ITALIC;
-    }
-
-      </style>
-    </head>
-    <body>
-  <div class="MainTitle">$($Header)</div>
-        <hr size="8" color="#387c2c" width="95%">
-        <div class="SubTitle">VMware Info v$($sScriptVersion) generated on $($ENV:Computername)</div>
-        <br/>
-        <div class="Created">Report created on $(Get-Date)</div>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>$($Header)</title>
+    <link rel="stylesheet" type="text/css" href="Includes/report_style.css">
+  </head>
+  <body>
+    <div class="header">
+      <img class="logo" src="Includes/vmw_logo_white.png" alt="">
+      <div class="maintitle">$($Header)</div>
+    </div>
+    <div class="subtitle">VMware Information Report v$($sScriptVersion) generated on $(Get-Date)</div>
 "@
 Return $Report
-  }
+}
 
 Function Get-CustomHTMLClose{
 $Report = @"
-  </div>
   </body>
-  </html>
+</html>
 "@
 Return $Report
 }
 
 Function Get-CustomHeader0 ($Title){
   $Report = @"
-      <div class="pageholder">		
-      <h1 class="dsp dsphead0">$($Title)</h1>
-      <div class="filler"></div>
-"@
-Return $Report
-}
-
-Function Get-CustomHeader0Close{
-$Report = @"
-</div>
+    <div class="dsp dsphead0">$($Title)</div>
 "@
 Return $Report
 }
 
 Function Get-CustomHeader ($Title, $cmnt){
 $Report = @"
-  <h2 class="dsp dsphead1">$($Title)</h2>
+    <div class="dsp dsphead1">$($Title)</div>
 "@
 If ($Comments) {
   $Report += @"
@@ -309,7 +175,6 @@ Return $Report
 Function Get-CustomHeaderClose{
 $Report = @"
   </div>
-  <div class="filler"></div>
 "@
 Return $Report
 }
@@ -334,7 +199,7 @@ Function Get-HTMLDetail ($Heading, $Detail){
 $Report = @"
 <TABLE>
   <tr>
-    <th width='50%'><b>$($Heading)</b></font></th>
+    <th width='50%'>$($Heading)</th>
     <td width='50%'>$($Detail)</td>
   </tr>
 </TABLE>
@@ -403,9 +268,30 @@ $MyReport += Get-CustomHeader "VMware Licensing Details"
 $MyReport += Get-HTMLTable $LicInfo
 $MyReport += Get-CustomHeaderClose
 
+#Collect ESXi Host Details
+$HostInfo = @()
+$VMHosts = Get-VMHost
+ForEach ($VMHost in $VMHosts){
+  $HostDetails = "" | Select-Object Name,Manufacturer,Model,Memory,CPUSockets,CPUCores,CPUModel,CPUFrequency,ESXiVersion,LicenseEdition
+  $HostDetails.Name = $VMHost.Name
+  $HostDetails.Manufacturer = $VMHost.ExtensionData.Summary.Hardware.Vendor
+  $HostDetails.Model = $VMHost.ExtensionData.Summary.Hardware.Model
+  $HostDetails.Memory = $VMHost.ExtensionData.Summary.Hardware.MemorySize/1gb
+  $HostDetails.CPUSockets = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuPackages
+  $HostDetails.CPUCores = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuCores
+  $HostDetails.CPUModel = $VMHost.ExtensionData.Summary.Hardware.CPUModel
+  $HostDetails.CPUFrequency = $VMHost.ExtensionData.Summary.Hardware.CpuMhz/1000
+  $HostDetails.ESXiVersion = $VMHost.ExtensionData.Config.Product.FullName
+  $lam = Get-View LicenseAssignmentManager
+  $HostDetails.LicenseEdition = ($lam.QueryAssignedLicenses($VMHost.ExtensionData.MoRef.Value)).AssignedLicense.Name
+  $HostInfo += $HostDetails
+}
+
+$MyReport += Get-CustomHeader "vSphere Host Details"
+$MyReport += Get-HTMLTable $HostInfo
+$MyReport += Get-CustomHeaderClose
 
 #Close HTML Report
-$MyReport += Get-CustomHeader0Close
 $MyReport += Get-CustomHTMLClose
 
 #Save the report and open in default browser
