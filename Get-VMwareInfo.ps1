@@ -35,7 +35,7 @@ SOFTWARE.
 ===================================================================================================
 Acknowledgements:
 PSLogging module by Luca Sturlese (http://9to5it.com)
-
+HTML functions inspired by Alan Renouf (http://virtu-al.net)
 ===================================================================================================
 
 .SYNOPSIS
@@ -65,6 +65,23 @@ PSLogging module by Luca Sturlese (http://9to5it.com)
   ./Get-VMwareInfo.ps1
       or
   <path to script>/Get-VMwareInfo.ps1
+
+.CHANGELOG
+  02-05-2015  Completed HTML report and information gathering for licensing and ESXi hosts
+  01-15-2018  Development begins
+
+.ToDo
+  Check for dependencies
+    PSLogging
+    VMware.PowerCLI
+  Check configuration issues
+    VM snapshots
+    Virtual CD-Rom devices connected
+  Capacity Summary
+    Number of hosts
+    Number of VMs
+    Powered-off VMs
+    Estimate of VM 'slots' available
 #>
 
 #[Script Parameters]===============================================================================
@@ -207,6 +224,82 @@ $Report = @"
 Return $Report
 }
 
+Function Test-NuGet {
+  Begin {
+    Write-LogInfo -LogPath $sLogFile -Message 'Checking for NuGet Package Provider...'
+  }
+
+  Process {
+    Try {
+      $pkg = Get-PackageProvider -ListAvailable | Where-Object {$_.Name -eq "NuGet"}
+      if ($pkg) {
+        Write-LogInfo -LogPath $sLogFile -Message 'NuGet is already installed.'
+      }
+
+      else {
+        Write-LogInfo -LogPath $sLogFile -Message 'NuGet not found.  Installing...'
+        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
+        Write-LogInfo -LogPath $sLogFile -Message 'NuGet Installed Successfully.'
+      }
+    }
+
+    Catch {
+      Write-LogError -LogPath $sLogFile -Message $_.Exception -ExitGracefully
+      Break
+    }
+  }
+
+  End {
+    If ($?) {
+      Write-LogInfo -LogPath $sLogFile -Message 'NuGet Validated.'
+      Write-LogInfo -LogPath $sLogFile -Message ' '
+    }
+  }
+}
+
+Function Test-PowerCLI {
+  Begin {
+    Write-LogInfo -LogPath $sLogFile -Message 'Checking for PowerCLI modules...'
+  }
+
+  Process {
+    Try {
+      $pcli = Get-Module -ListAvailable | Where-Object {$_.Name -eq "VMware.PowerCLI"}
+      if ($pcli) {
+        Write-LogInfo -LogPath $sLogFile -Message 'PowerCLI is already installed.'
+      }
+
+      else {
+        Write-LogInfo -LogPath $sLogFile -Message 'PowerCLI not found.  Installing...'
+        $psGal = Get-PSRepository | Where-Object {$_.Name -eq "PSGallery"}
+        if ($psGal.InstallationPolicy -eq "Trusted") {
+          Write-LogInfo -LogPath $sLogFile -Message 'PSGallery is trusted.'
+        }
+
+        else {
+          Write-LogInfo -LogPath $sLogFile -Message 'Setting PSGallery as trusted gallery.'
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+        }
+
+        Install-Module -Name VMware.PowerCLI -Scope CurrentUser -Confirm $false
+        Write-LogInfo -LogPath $sLogFile -Message 'PowerCLI modules successfully installed.'
+      }
+    }
+
+    Catch {
+      Write-LogError -LogPath $sLogFile -Message $_.Exception -ExitGracefully
+      Break
+    }
+  }
+
+  End {
+    If ($?) {
+      Write-LogInfo -LogPath $sLogFile -Message 'PowerCLI Validated.'
+      Write-LogInfo -LogPath $sLogFile -Message ' '
+    }
+  }
+}
+
 <#
 
 Function <FunctionName> {
@@ -242,12 +335,14 @@ $Date = Get-Date
 #Start Logging
 Start-Log -LogPath $sLogPath -LogName $sLogName -ScriptVersion $sScriptVersion
 
+#Test prerequisites
+Test-NuGet
+Test-PowerCLI
+
 #Connect to vCenter or ESXi host
 Connect-VMwareServer -VMServer $sVIServer
 
-#Initialize HTML Report
-$MyReport = Get-CustomHTML -Header "VMware Information Report"
-$MyReport += Get-CustomHeader0 $oVIServer.Name
+
 
 #Collect License Details
 $LicInfo = @()
@@ -264,32 +359,47 @@ ForEach ($License in ($LicManager | Select-Object -ExpandProperty Licenses | Whe
   $LicInfo += $LicDetails
 }
 
-$MyReport += Get-CustomHeader "VMware Licensing Details"
-$MyReport += Get-HTMLTable $LicInfo
-$MyReport += Get-CustomHeaderClose
+
 
 #Collect ESXi Host Details
 $HostInfo = @()
 $VMHosts = Get-VMHost
 $lam = Get-View LicenseAssignmentManager
 ForEach ($VMHost in $VMHosts){
-  $HostDetails = "" | Select-Object Name,Manufacturer,Model,Memory,Sockets,Cores,CPUModel,CPUFrequency,ESXiVersion,LicenseEdition
+  $HostDetails = "" | Select-Object Cluster,Name,Manufacturer,Model,Memory,Sockets,Cores,"CPU Model","CPU Frequency","ESXi Version","License Edition"
+  $HostDetails.Cluster = $VMHost.Parent.Name
   $HostDetails.Name = $VMHost.Name
   $HostDetails.Manufacturer = $VMHost.ExtensionData.Summary.Hardware.Vendor
   $HostDetails.Model = $VMHost.ExtensionData.Summary.Hardware.Model
   $HostDetails.Memory = [string]([math]::Round(($VMHost.ExtensionData.Summary.Hardware.MemorySize)/1gb,2)) + " GB"
   $HostDetails.Sockets = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuPackages
   $HostDetails.Cores = $VMHost.ExtensionData.Hardware.CpuInfo.NumCpuCores
-  $HostDetails.CPUModel = $VMHost.ExtensionData.Summary.Hardware.CPUModel
-  $HostDetails.CPUFrequency = [string]($VMHost.ExtensionData.Summary.Hardware.CpuMhz/1000) + " GHz"
-  $HostDetails.ESXiVersion = $VMHost.ExtensionData.Config.Product.FullName
-  $HostDetails.LicenseEdition = ($lam.QueryAssignedLicenses($VMHost.ExtensionData.MoRef.Value)).AssignedLicense.Name
+  $HostDetails."CPU Model" = $VMHost.ExtensionData.Summary.Hardware.CPUModel
+  $HostDetails."CPU Frequency" = [string]($VMHost.ExtensionData.Summary.Hardware.CpuMhz/1000) + " GHz"
+  $HostDetails."ESXi Version" = $VMHost.ExtensionData.Config.Product.FullName
+  $HostDetails."License Edition" = ($lam.QueryAssignedLicenses($VMHost.ExtensionData.MoRef.Value)).AssignedLicense.Name
   $HostInfo += $HostDetails
 }
 
+
+
+#Initialize HTML Report
+$MyReport = Get-CustomHTML -Header "VMware Information Report"
+$MyReport += Get-CustomHeader0 $oVIServer.Name
+
+#Add Summary Details
+
+#Add License Details
+$MyReport += Get-CustomHeader "VMware Licensing Details"
+$MyReport += Get-HTMLTable $LicInfo
+$MyReport += Get-CustomHeaderClose
+
+#Add Host Details
 $MyReport += Get-CustomHeader "vSphere Host Details"
 $MyReport += Get-HTMLTable $HostInfo
 $MyReport += Get-CustomHeaderClose
+
+#Add VM Details
 
 #Close HTML Report
 $MyReport += Get-CustomHTMLClose

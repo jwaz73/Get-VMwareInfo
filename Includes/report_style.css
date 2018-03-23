@@ -3,7 +3,7 @@
 }
 
 body {
-    max-width: 1000px;
+    max-width: 1250px;
     margin: auto;
 }
 
@@ -20,12 +20,12 @@ h2 {
 
 table {
     table-layout: auto; 
-    width: 100%
+    width: 100%;
 }
 
 th {
     color: #003d70; 
-    text-align: left
+    text-align: left;
 }
 
 hr {
@@ -39,6 +39,7 @@ img.logo{
 .header{
     background-image: url("../Includes/report_header.png");
     height: 250px;
+    background-repeat: no-repeat;
 }
 
 .dspcont {
