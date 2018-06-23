@@ -4,7 +4,11 @@
 
 body {
     max-width: 1250px;
-    margin: auto;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-bottom: auto;
+    margin-right: auto;
+    color: #717074;
 }
 
 div{
@@ -37,9 +41,10 @@ img.logo{
 }
 
 .header{
-    background-image: url("../Includes/report_header.png");
+    background-image: url("../Includes/ReportHeader.png");
     height: 250px;
     background-repeat: no-repeat;
+    border: #bbbbbb 1px solid;
 }
 
 .dspcont {

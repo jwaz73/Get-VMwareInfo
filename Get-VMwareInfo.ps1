@@ -3,7 +3,7 @@
 ===================================================================================================
 Author                      : James Wood
 Author email                : woodj@vmware.com
-Version                     : 1.0
+Version                     : Beta v0.2
 ===================================================================================================
 Tested Against Environment:
 vCenter Server              : 6.5U1e
@@ -35,7 +35,7 @@ SOFTWARE.
 ===================================================================================================
 Acknowledgements:
 PSLogging module by Luca Sturlese (http://9to5it.com)
-HTML functions inspired by Alan Renouf (http://virtu-al.net)
+Multiple functions inspired by Alan Renouf (http://virtu-al.net)
 ===================================================================================================
 
 .SYNOPSIS
@@ -73,15 +73,26 @@ HTML functions inspired by Alan Renouf (http://virtu-al.net)
 .ToDo
   Check for dependencies
     PSLogging
-    VMware.PowerCLI
+    VMware.PowerCLI -> Done!
   Check configuration issues
     VM snapshots
     Virtual CD-Rom devices connected
+    VMware tools not up to date
   Capacity Summary
     Number of hosts
+    Number of CPU's
     Number of VMs
     Powered-off VMs
     Estimate of VM 'slots' available
+  Detailed Information
+    Cluster Details
+      HA Enabled
+      Proactive HP Enabled
+      DRS Enabled
+      DRS Automation Level
+      DPM Enabled
+      DPM Threshold
+
 #>
 
 #[Script Parameters]===============================================================================
@@ -98,7 +109,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 #[Declarations]====================================================================================
 
 #Script Version
-$sScriptVersion = 'Beta 0.1'
+$sScriptVersion = 'Beta v0.2'
 
 #Log File Info
 $sLogPath = 'C:\Windows\Temp'
@@ -116,7 +127,7 @@ Function Connect-VMwareServer {
 
   Process {
     Try {
-      $oCred = Get-Credential -Message 'Enter credentials to connect to vCenter Server or vSphere Host'
+      $oCred = Get-Credential -Message 'Enter credentials to connect to vCenter Server.'
       $script:oVIServer = Connect-VIServer -Server $VMServer -Credential $oCred
     }
 
@@ -150,11 +161,8 @@ $Report = @"
     <link rel="stylesheet" type="text/css" href="Includes/report_style.css">
   </head>
   <body>
-    <div class="header">
-      <img class="logo" src="Includes/vmw_logo_white.png" alt="">
-      <div class="maintitle">$($Header)</div>
-    </div>
-    <div class="subtitle">VMware Information Report v$($sScriptVersion) generated on $(Get-Date)</div>
+    <div class="header"></div>
+    <div class="subtitle">VMware Information Report $($sScriptVersion) generated on $(Get-Date)</div>
 "@
 Return $Report
 }
